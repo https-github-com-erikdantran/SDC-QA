@@ -1,0 +1,25 @@
+{
+  "name": "package.json",
+  "version": "1.0.0",
+  "description": "System design capstone branch handling QA requests",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon Server/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/https-github-com-erikdantran/SDC-QA.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/https-github-com-erikdantran/SDC-QA/issues"
+  },
+  "homepage": "https://github.com/https-github-com-erikdantran/SDC-QA#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.15"
+  }
+}
