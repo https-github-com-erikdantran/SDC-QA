@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS questions (
   date_written datetime NOT NULL,
   asker_name varchar(255),
   asker_email varchar(255),
-  reported boolean,
-  helpful boolean,
+  helpful int default 0,
+  reported boolean default 0,
   PRIMARY KEY(id)
 );
 
@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS answers (
   date_written datetime NOT NULL,
   answerer_name varchar(255) NOT NULL,
   answerer_email varchar(255) NOT NULL,
-  reported boolean NOT NULL,
-  helpful boolean NOT NULL,
+  helpful int default 0,
+  reported boolean default 0,
   PRIMARY KEY(id),
   FOREIGN KEY(question_id)
     REFERENCES questions(id)
@@ -37,4 +37,4 @@ CREATE TABLE IF NOT EXISTS photos (
     REFERENCES answers(id)
 );
 
--- to run sql file run mysql -u root schema.sql
+-- to run sql file run mysql -u root < schema.sql
