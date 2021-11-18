@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS questions (
   PRIMARY KEY(id)
 );
 
+CREATE INDEX productId ON questions (product_id);
+
 CREATE TABLE IF NOT EXISTS answers (
   id int NOT NULL AUTO_INCREMENT,
   question_id int NOT NULL,

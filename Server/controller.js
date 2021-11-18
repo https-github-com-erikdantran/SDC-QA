@@ -1,16 +1,13 @@
 const helper = require('../Database/helper.js');
 
 const controller = {
-  // get questions
   getQuestions: (req, res) => {
-    // only product_id is required
-    helper.getQuestions(req.query.product_id, req.query.page, req.query.count)
+    helper.getFullQuestionResponse(req.query.product_id, req.query.page, req.query.count)
       .then(results => {
-        res.send(results)
+        res.status(200).send(results)
       })
   },
 
-  // posts questions
   addQuestion: (req, res) => {
     helper.addQuestion(req.body)
       .then(results => {
@@ -42,10 +39,13 @@ const controller = {
   },
 
   getAnswers: (req, res) => {
-    // this isnt used in the client side
-    //params is question id
-    console.log(req.params)
-    console.log('answers')
+    helper.getFullAnswerResponse(req.params.question_id)
+      .then(results => {
+        res.status(200).send(results);
+      })
+      .catch(err => {
+        console.log(err)
+      })
   },
 
   addAnswer: (req, res) => {
