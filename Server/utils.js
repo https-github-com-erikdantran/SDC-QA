@@ -447,3 +447,44 @@
           }
         ]
 }
+
+{
+  '6778': {
+    questionId: 3506,
+    id: 6778,
+    body: 'Quibusdam ut quis porro cum.',
+    date: 1970-01-01T00:00:00.000Z,
+    answerer_name: 'Kaycee25',
+    helpfulness: 9,
+    photos: []
+  },
+  '6779': {
+    questionId: 3506,
+    id: 6779,
+    body: 'Facilis nihil sunt modi ut voluptatum quia.',
+    date: 1970-01-01T00:00:00.000Z,
+    answerer_name: 'Triston.Koepp33',
+    helpfulness: 8,
+    photos: []
+  },
+  '6780': {
+    questionId: 3507,
+    id: 6780,
+    body: 'Pariatur saepe neque sunt molestias maiores.',
+    date: 1970-01-01T00:00:00.000Z,
+    answerer_name: 'Nicolette80',
+    helpfulness: 9,
+    photos: []
+  },
+  '6781': {
+    questionId: 3507,
+    id: 6781,
+    body: 'Animi excepturi ut consequatur id tempore iusto expedita at.',
+    date: 1970-01-01T00:00:00.000Z,
+    answerer_name: 'Amina_Homenick95',
+    helpfulness: 2,
+    photos: [ [Object] ]
+  }
+}
+
+10012

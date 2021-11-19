@@ -3,42 +3,42 @@ CREATE DATABASE IF NOT EXISTS QA;
 USE QA;
 
 CREATE TABLE IF NOT EXISTS questions (
-  id int NOT NULL AUTO_INCREMENT,
+  q_id int NOT NULL AUTO_INCREMENT,
   product_id int,
-  body varchar(200),
-  date_written datetime NOT NULL,
+  question_body varchar(200),
+  q_date_written datetime NOT NULL,
   asker_name varchar(30),
-  asker_email varchar(30),
-  helpful int default 0,
-  reported boolean default 0,
-  PRIMARY KEY(id)
+  asker_email varchar(50),
+  q_helpful int default 0,
+  q_reported boolean default 0,
+  PRIMARY KEY(q_id)
 );
 
 CREATE INDEX productId ON questions (product_id);
 
 CREATE TABLE IF NOT EXISTS answers (
-  id int NOT NULL AUTO_INCREMENT,
+  a_id int NOT NULL AUTO_INCREMENT,
   question_id int NOT NULL,
-  body varchar(200) NOT NULL,
-  date_written datetime NOT NULL,
+  answer_body varchar(200) NOT NULL,
+  a_date_written datetime NOT NULL,
   answerer_name varchar(30) NOT NULL,
-  answerer_email varchar(30) NOT NULL,
-  helpful int default 0,
-  reported boolean default 0,
-  PRIMARY KEY(id),
+  answerer_email varchar(50) NOT NULL,
+  a_helpful int default 0,
+  a_reported boolean default 0,
+  PRIMARY KEY(a_id),
   FOREIGN KEY(question_id)
-    REFERENCES questions(id)
+    REFERENCES questions(q_id)
 );
 
 -- CREATE INDEX questionId ON answers (question_id); not sure if needed
 
 CREATE TABLE IF NOT EXISTS photos (
-  id int NOT NULL AUTO_INCREMENT,
+  p_id int NOT NULL AUTO_INCREMENT,
   answer_id int NOT NULL,
   url varchar(255) NOT NULL,
-  PRIMARY KEY(id),
+  PRIMARY KEY(p_id),
   FOREIGN KEY(answer_id)
-    REFERENCES answers(id)
+    REFERENCES answers(a_id)
 );
 
 -- CREATE INDEX answerId ON photos (answer_id); not sure if needed

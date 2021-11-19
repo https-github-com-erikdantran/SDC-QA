@@ -7,7 +7,7 @@ const controller = {
         res.status(200).send(results)
       })
       .catch(err => {
-        res.status(404).end()
+        res.status(404).send(err)
       })
   },
 
@@ -17,7 +17,7 @@ const controller = {
         res.status(201).send('Successfully posted question');
       })
       .catch(err => {
-        console.log(err)
+        res.status(404).send(err)
       })
   },
 
@@ -27,7 +27,7 @@ const controller = {
         res.status(204).end();
       })
       .catch(err => {
-        console.log(err)
+        res.status(404).send(err)
       })
   },
 
@@ -37,7 +37,7 @@ const controller = {
         res.status(204).end();
       })
       .catch(err => {
-        console.log(err)
+        res.status(404).send(err)
       })
   },
 
@@ -47,7 +47,7 @@ const controller = {
         res.status(200).send(results);
       })
       .catch(err => {
-        console.log(err)
+        res.status(404).send(err)
       })
   },
 
@@ -65,7 +65,7 @@ const controller = {
         }
       })
       .catch(err => {
-        console.log(err)
+        res.status(404).send(err)
       })
   },
 
@@ -75,7 +75,7 @@ const controller = {
         res.status(204).end();
       })
       .catch(err => {
-        console.log(err)
+        res.status(404).send(err)
       })
   },
 
@@ -85,7 +85,7 @@ const controller = {
         res.status(204).end();
       })
       .catch(err => {
-        console.log(err)
+        res.status(404).send(err)
       })
   }
 }
