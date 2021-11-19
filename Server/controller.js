@@ -52,7 +52,6 @@ const controller = {
   },
 
   addAnswer: (req, res) => {
-    // first have to insert answer then use answer ID to insert photos
     helper.addAnswer(req.params.question_id, req.body)
       .then(results => {
         if (req.body.photos) {
