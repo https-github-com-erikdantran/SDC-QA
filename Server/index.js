@@ -3,6 +3,7 @@ const app = express();
 const morgan =require('morgan');
 const port = 3001;
 const router = require('./router.js');
+const relic = require('newrelic')
 
 app.use(morgan('dev'));
 app.use(express.json());

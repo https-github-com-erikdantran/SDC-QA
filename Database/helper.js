@@ -134,15 +134,15 @@ const helper = {
   //   })
   // },
 
-  getQuestions: (productId, page = 1, count = 5) => {
-    const questionsQ = `select * from questions where product_id=${productId} LIMIT ${count * page};`
-    return new Promise((resolve, reject) => {
-      pool.query(questionsQ, (err, results) => {
-        if (err) { reject(err) }
-        else { resolve(results) }
-      })
-    })
-  },
+  // getQuestions: (productId, page = 1, count = 5) => {
+  //   const questionsQ = `select * from questions where product_id=${productId} LIMIT ${count * page};`
+  //   return new Promise((resolve, reject) => {
+  //     pool.query(questionsQ, (err, results) => {
+  //       if (err) { reject(err) }
+  //       else { resolve(results) }
+  //     })
+  //   })
+  // },
 
   addQuestion: (data) => {
     const q = `INSERT INTO questions (product_id, question_body, q_date_written, asker_name, asker_email) VALUES (${data.product_id}, '${data.body}', CURRENT_TIMESTAMP, '${data.asker_name}', '${data.asker_email}');`;
@@ -183,54 +183,96 @@ const helper = {
       results: []
     }
     return new Promise((resolve, reject) => {
-      helper.getAnswers(questionId)
-        .then(answers => {
-          helper.getPhotos(answers.map((answer) => answer.a_id))
-            .then(photos => {
-              for (answer of answers) {
-                let answerSkeleton = {
-                  id: answer.a_id,
-                  body: answer.answer_body,
-                  date: answer.a_date_written,
-                  answerer_name: answer.answerer_name,
-                  helpfulness: answer.a_helpful,
-                  photos: []
-                }
-                for (photo of photos) {
-                  if (photo.answer_id = answer.a_id) {
-                    let photosSkeleton = {
-                      id: photo.p_id,
-                      url: photo.url
-                    }
-                    answerSkeleton.photos.push(photosSkeleton);
-                  }
-                }
-                response.results.push(answerSkeleton);
+      const q = `SELECT *
+      FROM answers a
+      LEFT JOIN photos p ON a.a_id = p.answer_id
+      WHERE a.question_id = ${questionId}
+      LIMIT ${page * count};`
+      pool.query(q, (err, results) => {
+        if (err) { reject(err) }
+        else {
+          let template = {};
+          for (result of results) {
+            if (!template[result.a_id]) {
+              template[result.a_id] = {
+                answer_id: result.a_id,
+                body: result.answer_body,
+                date: result.a_date_written,
+                answerer_name: result.answerer_name,
+                helpfulness: result.a_helpful,
+                photos: []
               }
-              resolve(response)
-            })
-        })
+            }
+            if (result.p_id) {
+              template[result.a_id].photos.push({
+                id: result.p_id,
+                url: result.url
+              })
+            }
+          }
+          Object.values(template).forEach(answer => response.results.push(answer));
+          resolve(response);
+        }
+      })
     })
   },
 
-  getAnswers: (questionIds) => {
-    return new Promise((resolve, reject) => {
-      if (Array.isArray(questionIds)) {
-        const ids = questionIds.join(',');
-        const q = `SELECT * FROM answers where question_id IN (${ids})`;
-        pool.query(q, (err, results) => {
-          if (err) { reject(err) }
-          else { resolve(results) }
-        })
-      } else {
-        const q = `SELECT * FROM answers WHERE question_id = ${questionIds};`;
-        pool.query(q, (err, results) => {
-          if (err) { reject(err) }
-          else { resolve(results) }
-        })
-      }
-    })
-  },
+  // getFullAnswerResponse: (questionId, page = 1, count = 5) => {
+  //   let response = {
+  //     question: questionId,
+  //     page: page,
+  //     count: count,
+  //     results: []
+  //   }
+  //   return new Promise((resolve, reject) => {
+  //     helper.getAnswers(questionId)
+  //       .then(answers => {
+  //         helper.getPhotos(answers.map((answer) => answer.a_id))
+  //           .then(photos => {
+  //             for (answer of answers) {
+  //               let answerSkeleton = {
+  //                 id: answer.a_id,
+  //                 body: answer.answer_body,
+  //                 date: answer.a_date_written,
+  //                 answerer_name: answer.answerer_name,
+  //                 helpfulness: answer.a_helpful,
+  //                 photos: []
+  //               }
+  //               for (photo of photos) {
+  //                 if (photo.answer_id = answer.a_id) {
+  //                   let photosSkeleton = {
+  //                     id: photo.p_id,
+  //                     url: photo.url
+  //                   }
+  //                   answerSkeleton.photos.push(photosSkeleton);
+  //                 }
+  //               }
+  //               response.results.push(answerSkeleton);
+  //             }
+  //             resolve(response)
+  //           })
+  //       })
+  //   })
+  // },
+
+  // getAnswers: (questionIds) => {
+  //   return new Promise((resolve, reject) => {
+  //     if (Array.isArray(questionIds)) {
+  //       const ids = questionIds.join(',');
+  //       const q = `SELECT * FROM answers where question_id IN (${ids})`;
+  //       pool.query(q, (err, results) => {
+  //         if (err) { reject(err) }
+  //         else { resolve(results) }
+  //       })
+  //     } else {
+  //       const q = `SELECT * FROM answers WHERE question_id = ${questionIds};`;
+  //       pool.query(q, (err, results) => {
+  //         if (err) { reject(err) }
+  //         else { resolve(results) }
+  //       })
+  //     }
+  //   })
+  // },
 
   addAnswer: (questionId, data) => {
     const q = `INSERT INTO answers (question_id, answer_body, a_date_written, answerer_name, answerer_email) VALUES (${questionId}, '${data.body}', CURRENT_TIMESTAMP, '${data.answerer_name}', '${data.answerer_email}');`;
@@ -263,16 +305,26 @@ const helper = {
   },
 
   // Photos
-  getPhotos: (answerIds) => {
-    const ids = answerIds.join(',');
-    const q = `SELECT * FROM photos where answer_id IN (${ids});`
-    return new Promise((resolve, reject) => {
-      pool.query(q, (err, results) => {
-        if (err) { reject(err) }
-        else { resolve(results) }
-      })
-    })
-  },
+  // getPhotos: (answerIds) => {
+  //   return new Promise((resolve, reject) => {
+  //     if (Array.isArray(answerIds)) {
+  //       const ids = answerIds.join(',');
+  //       console.log(answerIds)
+  //       const q = `SELECT * FROM photos where answer_id IN (${ids})`;
+  //       pool.query(q, (err, results) => {
+  //         if (err) { reject(err) }
+  //         else { resolve(results) }
+  //       })
+  //     } else {
+  //       const q = `SELECT * FROM photos WHERE answer_id = ${answerIds};`;
+  //       console.log(answerIds)
+  //       pool.query(q, (err, results) => {
+  //         if (err) { reject(err) }
+  //         else { resolve(results) }
+  //       })
+  //     }
+  //   })
+  // },
 
   addPhotos: (url) => {
     const q = `INSERT INTO photos (answer_id, url) VALUES ( (SELECT a_id FROM answers WHERE a_id = (SELECT MAX(a_id) FROM answers) ), '${url}');`;

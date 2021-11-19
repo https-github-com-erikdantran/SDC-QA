@@ -30,8 +30,6 @@ CREATE TABLE IF NOT EXISTS answers (
     REFERENCES questions(q_id)
 );
 
--- CREATE INDEX questionId ON answers (question_id); not sure if needed
-
 CREATE TABLE IF NOT EXISTS photos (
   p_id int NOT NULL AUTO_INCREMENT,
   answer_id int NOT NULL,
@@ -40,7 +38,5 @@ CREATE TABLE IF NOT EXISTS photos (
   FOREIGN KEY(answer_id)
     REFERENCES answers(a_id)
 );
-
--- CREATE INDEX answerId ON photos (answer_id); not sure if needed
 
 -- to run sql file run mysql -u root < schema.sql
