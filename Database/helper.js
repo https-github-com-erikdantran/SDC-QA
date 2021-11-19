@@ -2,34 +2,105 @@ const pool = require('./connection.js')
 
 const helper = {
   // Questions
+  // getFullQuestionResponse: (productId, page = 1, count = 5) => {
+  //   let response = {
+  //     product_id: productId,
+  //     results: []
+  //   }
+  //   let questions = [];
+  //   let answers = [];
+  //   let photos = [];
+
+  //   return new Promise((resolve, reject) => {
+  //     helper.getQuestions(productId, page, count)
+  //       .then(questions => {
+  //         if (questions.length === 0) { resolve (response) }
+  //         helper.getAnswers(questions.map((question) => question.id))
+  //           .then(answers => {
+  //             if (answers.length === 0) { resolve (response) }
+  //               two paths start here, if answers = 0 resolve response
+  //               if it has answers keep normal workflow with answers
+  //             helper.getPhotos(answers.map((answer) => answer.id))
+  //               .then(photos => {
+  //                 for (question of questions) {
+  //                   if (question.reported === 0) { question.reported = false }
+  //                   if (question.reported === 1) { question.reported = true }
+  //                   let questionSkeleton = {
+  //                     question_id: question.id,
+  //                     question_body: question.body,
+  //                     question_date: question.date_written,
+  //                     asker_name: question.asker_name,
+  //                     question_helpfulness: question.helpful,
+  //                     reported: question.reported,
+  //                     answers: {}
+  //                   }
+  //                   response.results.push(questionSkeleton);
+  //                 }
+  //                 // create answers object and add photos into that object so it doens't run every photo for each answer
+  //                 for (answer of answers) {
+  //                   let answerSkeleton = {
+  //                     id: answer.id,
+  //                     body: answer.body,
+  //                     date: answer.date_written,
+  //                     answerer_name: answer.answerer_name,
+  //                     helpfulness: answer.helpful,
+  //                     photos: []
+  //                   }
+  //                   for (photo of photos) {
+  //                     if (photo.answer_id = answer.id) {
+  //                       let photosSkeleton = {
+  //                         id: photo.id,
+  //                         url: photo.url
+  //                       }
+  //                       answerSkeleton.photos.push(photosSkeleton);
+  //                     }
+  //                   }
+  //                   for (question of response.results) {
+  //                     if (answer.question_id === question.question_id) {
+  //                       question.answers[answer.id] = answerSkeleton;
+  //                     }
+  //                   }
+  //                 }
+  //                 resolve(response)
+  //               })
+  //           })
+  //       })
+  //   })
+  // },
+
   getFullQuestionResponse: (productId, page = 1, count = 5) => {
     let response = {
       product_id: productId,
       results: []
-    }
+    };
+
     return new Promise((resolve, reject) => {
       helper.getQuestions(productId, page, count)
         .then(questions => {
-          helper.getAnswers(questions.map((question) => question.id))
-            .then(answers => {
-              helper.getPhotos(answers.map((answer) => answer.id))
-                .then(photos => {
-                  for (question of questions) {
-                    if (question.reported === 0) { question.reported = false }
-                    if (question.reported === 1) { question.reported = true }
-                    let questionSkeleton = {
-                      question_id: question.id,
-                      question_body: question.body,
-                      question_date: question.date_written,
-                      asker_name: question.asker_name,
-                      question_helpfulness: question.helpful,
-                      reported: question.reported,
-                      answers: {}
-                    }
-                    response.results.push(questionSkeleton);
-                  }
+          if (questions.length === 0) { resolve(response) }
+          else {
+            for (question of questions) {
+              if (question.reported === 0) { question.reported = false }
+              if (question.reported === 1) { question.reported = true }
+              let questionSkeleton = {
+                question_id: question.id,
+                question_body: question.body,
+                question_date: question.date_written,
+                asker_name: question.asker_name,
+                question_helpfulness: question.helpful,
+                reported: question.reported,
+                answers: {}
+              }
+              response.results.push(questionSkeleton);
+            }
+            helper.getAnswers(questions.map((question) => question.id))
+              .then(answers => {
+                if (answers.length === 0) { resolve(response) }
+                else {
+                  let answersObj = {};
                   for (answer of answers) {
                     let answerSkeleton = {
+                      questionId: answer.question_id,
                       id: answer.id,
                       body: answer.body,
                       date: answer.date_written,
@@ -37,27 +108,199 @@ const helper = {
                       helpfulness: answer.helpful,
                       photos: []
                     }
-                    for (photo of photos) {
-                      if (photo.answer_id = answer.id) {
-                        let photosSkeleton = {
-                          id: photo.id,
-                          url: photo.url
-                        }
-                        answerSkeleton.photos.push(photosSkeleton);
-                      }
-                    }
-                    for (question of response.results) {
-                      if (answer.question_id === question.question_id) {
-                        question.answers[answer.id] = answerSkeleton;
-                      }
-                    }
+                    answersObj[answer.id] = answerSkeleton;
                   }
-                  resolve(response)
-                })
-            })
+                  helper.getPhotos(answers.map((answer) => answer.id))
+                    .then(photos => {
+                      for (photo of photos) {
+                        if (answersObj[photo.answer_id]) {
+                          let photosSkeleton = {
+                            id: photo.id,
+                            url: photo.url
+                          }
+                          answersObj[photo.answer_id].photos.push(photosSkeleton);
+                        }
+                      }
+
+                      for (question of response.results) {
+                        for (answer in answersObj) {
+                          if (question.question_id === answersObj[answer].questionId) {
+                            delete answersObj[answer].questionId;
+                            question.answers[answersObj[answer].id] = answersObj[answer];
+                          }
+                        }
+                      }
+                      resolve(response)
+                    })
+                }
+              })
+          }
         })
     })
   },
+
+  // getFullQuestionResponse: (productId, page = 1, count = 5) => {
+  //   let response = {
+  //     product_id: productId,
+  //     results: []
+  //   };
+
+  //   let questions = [];
+  //   let answers = [];
+  //   let photos = [];
+
+  //   return new Promise((resolve, reject) => {
+  //     helper.getQuestions(productId, page, count)
+  //       .then(questionsR => {
+  //         if (questionsR.length === 0) {
+  //           console.log('question 0')
+  //         } else {
+  //           questions = questionsR;
+  //           helper.getAnswers(questions.map((question) => question.id))
+  //             .then(answersR => {
+  //               // two paths start here, if answers = 0 resolve response
+  //               // if it has answers keep normal workflow with answers
+  //               if (answersR.length === 0) {
+  //                 console.log('answers 0')
+  //               } else {
+  //                 answers = answersR;
+  //                 helper.getPhotos(answers.map((answer) => answer.id))
+  //                   .then(photosR => {
+  //                     photos = photosR;
+  //                   })
+  //               }
+  //             })
+  //         }
+  //       })
+
+  //     console.log('past the blob')
+  //     for (question of questions) {
+  //       console.log(question)
+  //       if (question.reported === 0) { question.reported = false }
+  //       if (question.reported === 1) { question.reported = true }
+  //       let questionSkeleton = {
+  //         question_id: question.id,
+  //         question_body: question.body,
+  //         question_date: question.date_written,
+  //         asker_name: question.asker_name,
+  //         question_helpfulness: question.helpful,
+  //         reported: question.reported,
+  //         answers: {}
+  //       }
+  //       console.log(questionSkeleton)
+  //       response.results.push(questionSkeleton);
+  //     }
+  //     console.log(response)
+  //     // create answers object and add photos into that object so it doens't run every photo for each answer
+  //     for (answer of answers) {
+  //       let answerSkeleton = {
+  //         id: answer.id,
+  //         body: answer.body,
+  //         date: answer.date_written,
+  //         answerer_name: answer.answerer_name,
+  //         helpfulness: answer.helpful,
+  //         photos: []
+  //       }
+  //       for (photo of photos) {
+  //         if (photo.answer_id = answer.id) {
+  //           let photosSkeleton = {
+  //             id: photo.id,
+  //             url: photo.url
+  //           }
+  //           answerSkeleton.photos.push(photosSkeleton);
+  //         }
+  //       }
+  //       for (question of response.results) {
+  //         if (answer.question_id === question.question_id) {
+  //           question.answers[answer.id] = answerSkeleton;
+  //         }
+  //       }
+  //     }
+  //     resolve(response)
+  //   })
+  // },
+
+  // getFullQuestionResponse: (productId, page = 1, count = 5) => {
+  //   let response = {
+  //     product_id: productId,
+  //     results: []
+  //   }
+  //   return new Promise((resolve, reject) => {
+  //     helper.getQuestions(productId, page, count)
+  //       .then(questions => {
+  //         helper.getAnswers(questions.map((question) => question.id))
+  //           .then(answers => {
+  //             helper.getPhotos(answers.map((answer) => answer.id))
+  //               .then(photos => {
+  //                 for (question of questions) {
+  //                   if (question.reported === 0) { question.reported = false }
+  //                   if (question.reported === 1) { question.reported = true }
+  //                   let questionSkeleton = {
+  //                     question_id: question.id,
+  //                     question_body: question.body,
+  //                     question_date: question.date_written,
+  //                     asker_name: question.asker_name,
+  //                     question_helpfulness: question.helpful,
+  //                     reported: question.reported,
+  //                     answers: {}
+  //                   }
+  //                   response.results.push(questionSkeleton);
+  //                 }
+  //                 // create answers object and add photos into that object so it doens't run every photo for each answer
+  //                 let answersObj = {};
+  //                 for (answer of answers) {
+  //                   let answerSkeleton = {
+  //                     questionId: answer.question_id,
+  //                     id: answer.id,
+  //                     body: answer.body,
+  //                     date: answer.date_written,
+  //                     answerer_name: answer.answerer_name,
+  //                     helpfulness: answer.helpful,
+  //                     photos: []
+  //                   }
+  //                   answersObj[answer.id] = answerSkeleton;
+  //                 }
+
+  // for (photo of photos) {
+  //   if (answersObj[photo.answer_id]) {
+  //     let photosSkeleton = {
+  //       id: photo.id,
+  //       url: photo.url
+  //     }
+  //     answersObj[photo.answer_id].photos.push(photosSkeleton);
+  //   }
+  // }
+  //                 console.log(answersObj)
+
+  // for (question of response.results) {
+  //   for (answer in answersObj) {
+  //     console.log('question id', question.question_id)
+  //     console.log('answer id', answer.questionId)
+  //     if (question.question_id === answer.questionId) {
+  //       delete answer.questionId;
+  //       question.answers[answer.id] = answer;
+  //       console.log('hello')
+  //     }
+  //   }
+  // }
+  //                 // console.log(response)
+  //                 resolve(response)
+  //               })
+  //           })
+  //       })
+  //   })
+  // },
+
+  // // ends up slower than other version
+  //   getFullQuestionResponse: (productId) => {
+  //       return new Promise((resolve, reject) => {
+  //         const q = `SELECT * from questions q, answers a WHERE q.product_id = ${productId} AND a.question_id = q.id;`
+  //         pool.query(q, (err, results) => {
+  //           if (err) { reject (err) }
+  //           else { resolve (results) }
+  //         })
+  //       })
+  //   },
 
   getQuestions: (productId, page = 1, count = 5) => {
     const questionsQ = `select * from questions where product_id=${productId} LIMIT ${count * page};`
@@ -90,7 +333,7 @@ const helper = {
   },
 
   reportQuestion: (questionId) => {
-    const q = `UPDATE questions SET reported = reported + 1 where id = ${questionId};`;
+    const q = `UPDATE questions SET reported = true where id = ${questionId};`;
     return new Promise((resolve, reject) => {
       pool.query(q, (err, results) => {
         if (err) { reject(err) }
@@ -178,7 +421,7 @@ const helper = {
   },
 
   reportAnswer: (answerId) => {
-    const q = `UPDATE answers SET reported = reported + 1 where id = ${answerId};`;
+    const q = `UPDATE answers SET reported = true where id = ${answerId};`;
     return new Promise((resolve, reject) => {
       pool.query(q, (err, results) => {
         if (err) { reject(err) }

@@ -6,6 +6,9 @@ const controller = {
       .then(results => {
         res.status(200).send(results)
       })
+      .catch(err => {
+        res.status(404).end()
+      })
   },
 
   addQuestion: (req, res) => {
